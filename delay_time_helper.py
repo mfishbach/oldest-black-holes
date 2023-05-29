@@ -26,8 +26,9 @@ def inverse_cdf_powerlaw(quantile, tmin, alpha, tmax):
         t = (quantile*(tmax**(alpha+1) - tmin**(alpha+1)) + tmin**(alpha+1))**(1.0/(alpha+1))
     return t
 
-def draw_delay_times(tmin, shape, alpha = -1, tmax = config.cosmo_dict["age_of_universe"]):
-    u = jnp.array(np.random.random_sample(shape))
+def draw_delay_times(tmin, shape, alpha = -1, tmax = config.cosmo_dict["age_of_universe"], seed = None):
+    rng = np.random.default_rng(seed = seed)
+    u = jnp.array(rng.random(shape))
     t = inverse_cdf_powerlaw(u, tmin, alpha, tmax)
     return t
 
@@ -45,13 +46,13 @@ def calculate_formation_redshift(samples, tmin, alpha = -1):
 
     return formation_redshift
 
-def add_formation_tL(samples, tmin, alpha = -1):
+def add_formation_tL(samples, tmin, alpha = -1, seed = None):
 
     tL_merge = config.cosmo_dict["lookback_time"](samples["redshift"])
 
     tmax = config.cosmo_dict["lookback_time"](config.zmax) - tL_merge
 
-    td = draw_delay_times(tmin, tL_merge.shape, alpha, tmax)
+    td = draw_delay_times(tmin, tL_merge.shape, alpha, tmax, seed)
 
     samples["formation_lookback_time"] = tL_merge + td
 
