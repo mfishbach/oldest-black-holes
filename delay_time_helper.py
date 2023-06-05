@@ -32,13 +32,13 @@ def draw_delay_times(tmin, shape, alpha = -1, tmax = config.cosmo_dict["age_of_u
     t = inverse_cdf_powerlaw(u, tmin, alpha, tmax)
     return t
 
-def calculate_formation_redshift(samples, tmin, alpha = -1):
+def calculate_formation_redshift(samples, tmin, alpha = -1, seed = None):
 
     tL_merge = config.cosmo_dict["lookback_time"](samples["redshift"])
 
     tmax = config.cosmo_dict["lookback_time"](config.zmax) - tL_merge
 
-    td = draw_delay_times(tmin, tL_merge.shape, alpha, tmax)
+    td = draw_delay_times(tmin, tL_merge.shape, alpha, tmax, seed)
 
     formation_lookback_time = tL_merge + td
 
