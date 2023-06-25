@@ -75,8 +75,6 @@ def merger_rate_at_age_from_formation_delay(age_m_grid, tau_grid, ptau_grid, for
 
     formation_rate_2d = formation_rate_at_age_func(age_f_2d) #formation rate at formation time
 
-    merger_rate = jnp.trapz(formation_rate_at_age_func * ptau_grid, tau_grid, axis = -1) #integrate over delay time distribution
+    merger_rate = jnp.trapz(formation_rate_2d * ptau_grid, tau_grid, axis = -1) #integrate over delay time distribution
 
     return merger_rate
-
-
