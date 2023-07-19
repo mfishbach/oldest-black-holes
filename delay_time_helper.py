@@ -32,11 +32,17 @@ def draw_delay_times(tmin, shape, alpha = -1, tmax = config.cosmo_dict["age_of_u
     t = inverse_cdf_powerlaw(u, tmin, alpha, tmax)
     return t
 
-def calculate_formation_redshift(samples, tmin, alpha = -1, seed = None):
+def calculate_formation_redshift(samples, tmin, alpha = -1, truncate_tmax = True, seed = None):
 
     tL_merge = config.cosmo_dict["lookback_time"](samples["redshift"])
 
-    tmax = config.cosmo_dict["lookback_time"](config.zmax) - tL_merge
+    if truncate_tmax:
+
+        tmax = config.cosmo_dict["lookback_time"](config.zmax) - tL_merge
+
+    else:
+
+        tmax = config.cosmo_dict["lookback_time"](config.zmax)
 
     td = draw_delay_times(tmin, tL_merge.shape, alpha, tmax, seed)
 
@@ -46,11 +52,17 @@ def calculate_formation_redshift(samples, tmin, alpha = -1, seed = None):
 
     return formation_redshift
 
-def add_formation_tL(samples, tmin, alpha = -1, seed = None):
+def add_formation_tL(samples, tmin, alpha = -1, truncate_tmax = True, seed = None):
 
     tL_merge = config.cosmo_dict["lookback_time"](samples["redshift"])
 
-    tmax = config.cosmo_dict["lookback_time"](config.zmax) - tL_merge
+    if truncate_tmax:
+
+        tmax = config.cosmo_dict["lookback_time"](config.zmax) - tL_merge
+
+    else:
+
+        tmax = config.cosmo_dict["lookback_time"](config.zmax)
 
     td = draw_delay_times(tmin, tL_merge.shape, alpha, tmax, seed)
 
