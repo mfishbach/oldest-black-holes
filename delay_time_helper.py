@@ -2,6 +2,9 @@ import numpy as np
 
 import jax.numpy as jnp
 
+from scipy.integrate import cumtrapz
+from scipy.interpolate import interp1d
+
 from gw_pop_numpyro import config
 
 #tmin, tmax in Myr
@@ -90,3 +93,30 @@ def merger_rate_at_age_from_formation_delay(age_m_grid, tau_grid, ptau_grid, for
     merger_rate = jnp.trapz(formation_rate_2d * ptau_grid, tau_grid, axis = -1) #integrate over delay time distribution
 
     return merger_rate
+
+def calculate_zf_quantiles_from_zm(zm, q, tmin, alpha, tmax, Rf_func, res = 100000):
+
+    tm = config.cosmo_dict["lookback_time"](zm)
+
+    tm_2d = tm[:, jnp.newaxis] #lookback time at merger, elevate to 2-d array
+
+    tf_grid = jnp.logspace(jnp.log10(tmin), jnp.log10(tmax), res)
+
+    tau_2d =  -tm_2d + tf_grid #has shape (len(zm), 1000)
+
+    ptau_2d = ptau(tau_2d, tmin, alpha, tmax)
+
+    cump_tf_given_tm = cumtrapz(Rf_func(tf_grid) * ptau_2d, tf_grid, axis = -1, initial = 0) #has shape (len(zm), res)
+
+    cump_tf_given_tm_normalized = cump_tf_given_tm.T / cump_tf_given_tm[:,-1].T #normalize
+
+    cump_tf_given_tm_normalized = cump_tf_given_tm_normalized.T #transpose to get dimensions back to (len(zm), res)
+
+
+    #find closest elements in cump_tf_given_tm_normalized to q 
+    idx = np.argmin(np.abs(cump_tf_given_tm_normalized - q), axis = -1)
+    tfs = tf_grid[idx]
+
+    zfs = config.cosmo_dict["z_at_lookback_time"](tfs)
+
+    return zfs
